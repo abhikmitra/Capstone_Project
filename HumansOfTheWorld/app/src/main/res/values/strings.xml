@@ -19,5 +19,6 @@
     <!--<string name="banner_ad_unit_id">ca-app-pub-6322503284296720/3898585295</string>-->
     <string name="title_activity_help">Help</string>
     <string name="title_activity_login">Login</string>
+    <string name="title_activity_detail">DetailActivity</string>
     <!-- ca-app-pub-6322503284296720/3898585295 -->
 </resources>

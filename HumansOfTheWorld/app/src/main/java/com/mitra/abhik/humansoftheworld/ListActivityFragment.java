@@ -1,8 +1,10 @@
 package com.mitra.abhik.humansoftheworld;
 
 import android.accounts.Account;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -68,23 +70,27 @@ public class ListActivityFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mAccount = Utility.CreateSyncAccount(this.getActivity());
-//        Bundle settingsBundle = new Bundle();
-//        settingsBundle.putBoolean(
-//                ContentResolver.SYNC_EXTRAS_MANUAL, true);
-//        settingsBundle.putBoolean(
-//                ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-//        ContentResolver.requestSync(mAccount, PostsContract.CONTENT_AUTHORITY, settingsBundle);
         View v = inflater.inflate(R.layout.fragment_list, container, false);
         ButterKnife.bind(this,v);
+        showLoadingScreen(true);
+        Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(mAccount, PostsContract.CONTENT_AUTHORITY, settingsBundle);
+
         return v;
     }
 
     protected void showLoadingScreen(Boolean b){
         if(b){
+            getActivity().getWindow().getDecorView().setBackgroundColor(Color.BLACK);
             mEmptyView.setVisibility(View.VISIBLE);
             appBar.setVisibility(View.GONE);
             mSwipeRefreshLayout.setVisibility(View.GONE);
         } else {
+            getActivity().getWindow().getDecorView().setBackgroundColor(Color.WHITE);
             mEmptyView.setVisibility(View.GONE);
             appBar.setVisibility(View.VISIBLE);
             mSwipeRefreshLayout.setVisibility(View.VISIBLE);
@@ -95,7 +101,7 @@ public class ListActivityFragment extends Fragment implements
     public void onStart() {
         super.onStart();
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().getThemedContext();
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().getThemedContext();
         DraweeController controller = Fresco.newDraweeControllerBuilder()
                 .setUri(animated_empty_pic_uri)
                 .setAutoPlayAnimations(true)
@@ -111,10 +117,11 @@ public class ListActivityFragment extends Fragment implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        showLoadingScreen(cursor.getCount()==0);
         Adapter adapter = new Adapter(cursor);
         adapter.setHasStableIds(true);
         mRecyclerView.setAdapter(adapter);
-        int columnCount = getResources().getInteger(R.integer.list_column_count);
+        int columnCount = 2;
         StaggeredGridLayoutManager sglm =
                 new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(sglm);
@@ -164,7 +171,6 @@ public class ListActivityFragment extends Fragment implements
                             DateUtils.FORMAT_ABBREV_ALL).toString()
                             + " by "
                             + "Abhik");
-            Uri uri = Uri.parse(mCursor.getString(Constants.COL_POST_PICTURE));
             ControllerListener controllerListener = new BaseControllerListener<ImageInfo>() {
                 @Override
                 public void onFinalImageSet(
@@ -198,15 +204,20 @@ public class ListActivityFragment extends Fragment implements
                     FLog.e(getClass(), throwable, "Error loading %s", id);
                 }
             };
-            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(uri)
-                    .setProgressiveRenderingEnabled(true)
-                    .build();
-            DraweeController controller = Fresco.newDraweeControllerBuilder()
-                    .setImageRequest(request)
-                    .setControllerListener(controllerListener)
-                    .setOldController(holder.thumbnailView.getController())
-                    .build();
-            holder.thumbnailView.setController(controller);
+            String urlString = mCursor.getString(Constants.COL_POST_PICTURE);
+            if(urlString!=null){
+                Uri uri = Uri.parse(urlString);
+                ImageRequest request = ImageRequestBuilder.newBuilderWithSource(uri)
+                        .setProgressiveRenderingEnabled(true)
+                        .build();
+                DraweeController controller = Fresco.newDraweeControllerBuilder()
+                        .setImageRequest(request)
+                        .setControllerListener(controllerListener)
+                        .setOldController(holder.thumbnailView.getController())
+                        .build();
+                holder.thumbnailView.setController(controller);
+            }
+
             //holder.thumbnailView.setAspectRatio(1.5f);
         }
 
