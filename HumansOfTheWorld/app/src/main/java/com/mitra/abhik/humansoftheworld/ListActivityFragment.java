@@ -1,29 +1,35 @@
 package com.mitra.abhik.humansoftheworld;
 
 import android.accounts.Account;
+import android.app.Fragment;
+import android.app.LoaderManager;
 import android.content.ContentResolver;
-import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
+import android.transition.ChangeBounds;
+import android.transition.Transition;
+import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.TextView;
 
 import com.facebook.common.logging.FLog;
@@ -79,8 +85,14 @@ public class ListActivityFragment extends Fragment implements
         settingsBundle.putBoolean(
                 ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         ContentResolver.requestSync(mAccount, PostsContract.CONTENT_AUTHORITY, settingsBundle);
-
         return v;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+
     }
 
     protected void showLoadingScreen(Boolean b){
@@ -152,8 +164,12 @@ public class ListActivityFragment extends Fragment implements
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            PostsContract.PostEntry.buildUriForPost(getItemId(vh.getAdapterPosition()))));
+                    setSharedElementReturnTransition(TransitionInflater.from(getActivity()).inflateTransition(R.transition.change_image_transform));
+                    setExitTransition(TransitionInflater.from(getActivity()).inflateTransition(android.R.transition.explode));
+
+                    DetailActivityFragment.navigate((AppCompatActivity) getActivity(),
+                            vh.thumbnailView, getItemId(vh.getAdapterPosition()));
+
                 }
             });
             return vh;

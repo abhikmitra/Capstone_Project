@@ -19,6 +19,7 @@
 
         <!--suppress AndroidLintContentDescription -->
         <com.facebook.drawee.view.SimpleDraweeView
+            android:transitionName="abhik.extraImage"
             android:id="@+id/thumbnail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

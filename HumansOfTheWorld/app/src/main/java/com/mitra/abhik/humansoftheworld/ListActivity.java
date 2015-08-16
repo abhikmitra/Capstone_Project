@@ -1,16 +1,45 @@
 package com.mitra.abhik.humansoftheworld;
 
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.transition.ChangeBounds;
+import android.transition.Transition;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.OvershootInterpolator;
 
 public class ListActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+           getWindow().setSharedElementEnterTransition(reenterTransition());
+            getWindow().setSharedElementExitTransition(exitTransition());
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+    }
+    private Transition exitTransition() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            ChangeBounds bounds = new ChangeBounds();
+            bounds.setInterpolator(new BounceInterpolator());
+            bounds.setDuration(10000);
+            return bounds;
+        }
+        return null;
+    }
+
+    private Transition reenterTransition() {
+        ChangeBounds bounds = new ChangeBounds();
+        bounds.setInterpolator(new OvershootInterpolator());
+        bounds.setDuration(10000);
+
+        return bounds;
     }
 
 

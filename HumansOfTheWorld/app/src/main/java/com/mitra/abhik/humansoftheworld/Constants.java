@@ -30,4 +30,5 @@ public class Constants {
     public static final int COL_POST_TITLE = 7;
     public static final int COL_CREATED_DATE = 8;
     public static final int COL_DELETED = 8;
+    public static final String post_id="post_id";
 }
