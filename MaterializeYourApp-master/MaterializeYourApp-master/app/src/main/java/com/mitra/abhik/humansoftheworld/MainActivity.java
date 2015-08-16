@@ -21,11 +21,16 @@ import android.app.LoaderManager;
 import android.content.ContentResolver;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -43,24 +48,41 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 
 public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String AVATAR_URL = "http://lorempixel.com/200/200/people/1/";
-
     private static List<ViewModel> items = new ArrayList<>();
-
-
-    private DrawerLayout drawerLayout;
-    private View content;
     Account mAccount;
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+    @Bind(R.id.swipe_refresh_layout)
+    SwipeRefreshLayout mSwipeRefreshLayout;
+    @Bind(R.id.emptyView)
+    ImageView mEmptyView;
+    @Bind(R.id.content)
+    CoordinatorLayout content;
+    @Bind(R.id.avatar)
+    ImageView avatar;
+    @Bind(R.id.recycler)
     RecyclerView recyclerView;
-
+    @Bind(R.id.fab)
+    FloatingActionButton fab;
+    @Bind(R.id.drawer_layout)
+    DrawerLayout drawerLayout;
+    @Bind(R.id.navigation_view)
+    NavigationView navigationView;
+    @Bind(R.id.appBarLayout)
+    AppBarLayout appBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAccount = Utility.CreateSyncAccount(this);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
         Bundle settingsBundle = new Bundle();
         settingsBundle.putBoolean(
                 ContentResolver.SYNC_EXTRAS_MANUAL, true);
@@ -71,15 +93,10 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         initFab();
         initToolbar();
         setupDrawerLayout();
-
-        content = findViewById(R.id.content);
-
-        final ImageView avatar = (ImageView) findViewById(R.id.avatar);
         Picasso.with(this).load(AVATAR_URL).transform(new CircleTransform()).into(avatar);
     }
 
     private void initRecyclerView() {
-        recyclerView = (RecyclerView) findViewById(R.id.recycler);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         RecyclerViewAdapter adapter = new RecyclerViewAdapter(items);
         adapter.setOnItemClickListener(this);
@@ -87,15 +104,15 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     }
 
     private void initFab() {
-        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 Snackbar.make(content, "FAB Clicked", Snackbar.LENGTH_SHORT).show();
             }
         });
     }
 
     private void initToolbar() {
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         final ActionBar actionBar = getSupportActionBar();
 
@@ -106,10 +123,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     }
 
     private void setupDrawerLayout() {
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
-        NavigationView view = (NavigationView) findViewById(R.id.navigation_view);
-        view.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override public boolean onNavigationItemSelected(MenuItem menuItem) {
                 Snackbar.make(content, menuItem.getTitle() + " pressed", Snackbar.LENGTH_LONG).show();
                 menuItem.setChecked(true);
@@ -142,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         items.clear();
+        showLoadingScreen(cursor.getCount()==0);
         while (cursor.moveToNext()){
             items.add(new ViewModel(cursor.getString(Constants.COL_POST_TITLE),
                     cursor.getString(Constants.COL_POST_PICTURE),
@@ -154,5 +169,18 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         recyclerView.setAdapter(null);
+    }
+    protected void showLoadingScreen(Boolean b){
+        if(b){
+            getWindow().getDecorView().setBackgroundColor(Color.BLACK);
+            mEmptyView.setVisibility(View.VISIBLE);
+            appBar.setVisibility(View.GONE);
+            mSwipeRefreshLayout.setVisibility(View.GONE);
+        } else {
+            getWindow().getDecorView().setBackgroundColor(Color.WHITE);
+            mEmptyView.setVisibility(View.GONE);
+            appBar.setVisibility(View.VISIBLE);
+            mSwipeRefreshLayout.setVisibility(View.VISIBLE);
+        }
     }
 }
