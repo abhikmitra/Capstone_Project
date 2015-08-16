@@ -1,7 +1,6 @@
 package com.mitra.abhik.humansoftheworld;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -29,6 +28,7 @@ import butterknife.ButterKnife;
 
 public class Login extends AppCompatActivity {
     Uri animated_logo_uri = Uri.parse("res:///" + R.drawable.human_animation);
+    //Uri animated_logo_uri = Uri.parse("file:///android_asset/human_animation");
     float fbIconScale = 1.45F;
     private String FBTAG = "FACEBOOK";
     CallbackManager callbackManager;
@@ -53,6 +53,9 @@ public class Login extends AppCompatActivity {
                 .build();
         mSimpleDraweeView.setController(controller);
         humanText.setTypeface(tf);
+//        Glide.with(this)
+//                .load(animated_logo_uri)
+//                .into(mSimpleDraweeView);
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         if(accessToken != null){
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
@@ -69,11 +72,13 @@ public class Login extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
 
         return super.onOptionsItemSelected(item);
     }
@@ -114,7 +119,7 @@ public class Login extends AppCompatActivity {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.d(FBTAG, "Login to facebook successful");
-                Intent intent = new Intent(getApplicationContext(), ListActivity.class);
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
                 finish();
             }
