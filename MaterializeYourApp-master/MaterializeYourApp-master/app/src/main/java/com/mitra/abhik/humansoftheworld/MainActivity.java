@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     }
 
     @Override public void onItemClick(View view, ViewModel viewModel) {
-        DetailActivity.navigate(this, view.findViewById(R.id.image), viewModel);
+        DetailActivity.navigate(this, view.findViewById(R.id.image), viewModel.getId());
     }
 
     @Override
@@ -152,11 +152,13 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         items.clear();
+        cursor.moveToFirst();
         showLoadingScreen(cursor.getCount()==0);
         while (cursor.moveToNext()){
             items.add(new ViewModel(cursor.getString(Constants.COL_POST_TITLE),
                     cursor.getString(Constants.COL_POST_PICTURE),
-                    cursor.getString(Constants.COL_POST_MESSAGE)));
+                    cursor.getString(Constants.COL_POST_MESSAGE),
+                    cursor.getLong(Constants.COL_POST_ID)));
         }
         initRecyclerView();
 

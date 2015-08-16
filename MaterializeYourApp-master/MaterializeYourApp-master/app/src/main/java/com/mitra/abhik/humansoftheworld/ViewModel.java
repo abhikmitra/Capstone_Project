@@ -19,17 +19,22 @@ package com.mitra.abhik.humansoftheworld;
 public class ViewModel {
     private String text;
     private String image;
-
+    private long id;
     public String getBody() {
         return body;
     }
 
     private String body;
 
-    public ViewModel(String text, String image,String body) {
+    public ViewModel(String text, String image,String body,long id) {
         this. text = text;
         this.image = image;
         this.body = body;
+        this.id = id;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getText() {

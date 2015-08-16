@@ -25,7 +25,11 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         mCursor.moveToPosition(position);
-        return DetailActivityFragment.newInstance(mCursor.getLong(Constants.COL_POST_ID));
+        return DetailActivityFragment.newInstance(
+                mCursor.getString(Constants.COL_POST_TITLE),
+                mCursor.getString(Constants.COL_POST_PICTURE),
+                mCursor.getString(Constants.COL_POST_MESSAGE)
+                );
     }
 
     public void setCursor(Cursor cursor) {

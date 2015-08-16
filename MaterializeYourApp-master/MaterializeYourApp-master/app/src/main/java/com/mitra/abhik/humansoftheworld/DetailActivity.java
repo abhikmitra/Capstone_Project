@@ -16,41 +16,39 @@
 
 package com.mitra.abhik.humansoftheworld;
 
+import android.app.LoaderManager;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.content.Loader;
+import android.database.Cursor;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.graphics.Palette;
-import android.support.v7.widget.Toolbar;
 import android.transition.Slide;
+import android.util.TypedValue;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
+import com.mitra.abhik.humansoftheworld.data.PostsLoader;
 
-public class DetailActivity extends AppCompatActivity {
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
+public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String EXTRA_IMAGE = "com.mitra.abhik.humansoftheworld.extraImage";
-    private static final String EXTRA_TITLE = "com.mitra.abhik.humansoftheworld.extraTitle";
-    private static final String EXTRA_BODY = "com.mitra.abhik.humansoftheworld.extraBody";
-    private CollapsingToolbarLayout collapsingToolbarLayout;
+    private Cursor mCursor;
+    private long mSelectedItemId;
+    private long mStartId;
+    @Bind(R.id.pager)
+    public ViewPager mPager;
+    private PagerAdapter mPagerAdapter;
 
-    public static void navigate(AppCompatActivity activity, View transitionImage, com.mitra.abhik.humansoftheworld.ViewModel viewModel) {
+    public static void navigate(AppCompatActivity activity, View transitionImage, long id) {
         Intent intent = new Intent(activity, DetailActivity.class);
-        intent.putExtra(EXTRA_IMAGE, viewModel.getImage());
-        intent.putExtra(EXTRA_TITLE, viewModel.getText());
-        intent.putExtra(EXTRA_BODY, viewModel.getBody());
-
+        intent.putExtra(Constants.post_id,id);
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, transitionImage, EXTRA_IMAGE);
         ActivityCompat.startActivity(activity, intent, options.toBundle());
     }
@@ -60,39 +58,16 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         initActivityTransitions();
         setContentView(com.mitra.abhik.humansoftheworld.R.layout.activity_detail);
-
-        ViewCompat.setTransitionName(findViewById(com.mitra.abhik.humansoftheworld.R.id.app_bar_layout), EXTRA_IMAGE);
-        supportPostponeEnterTransition();
-
-        setSupportActionBar((Toolbar) findViewById(com.mitra.abhik.humansoftheworld.R.id.toolbar));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        String itemTitle = getIntent().getStringExtra(EXTRA_TITLE);
-        String itemBody = getIntent().getStringExtra(EXTRA_BODY);
-        collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(com.mitra.abhik.humansoftheworld.R.id.collapsing_toolbar);
-        collapsingToolbarLayout.setTitle(itemTitle);
-        collapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
-
-        final ImageView image = (ImageView) findViewById(com.mitra.abhik.humansoftheworld.R.id.image);
-        Picasso.with(this).load(getIntent().getStringExtra(EXTRA_IMAGE)).into(image, new Callback() {
-            @Override public void onSuccess() {
-                Bitmap bitmap = ((BitmapDrawable) image.getDrawable()).getBitmap();
-                Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
-                    public void onGenerated(Palette palette) {
-                        applyPalette(palette);
-                    }
-                });
+        ButterKnife.bind(this);
+        if (savedInstanceState == null) {
+            if (getIntent() != null) {
+                mStartId = getIntent().getLongExtra(Constants.post_id,0);
+                mSelectedItemId = mStartId;
             }
+        }
 
-            @Override public void onError() {
-
-            }
-        });
-
-        TextView title = (TextView) findViewById(R.id.title);
-        TextView description = (TextView) findViewById(R.id.description);
-        description.setText(itemBody);
-        title.setText(itemTitle);
+        createPager();
+        getLoaderManager().initLoader(0, null, this);
     }
 
     private void initActivityTransitions() {
@@ -104,20 +79,64 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
-    private void applyPalette(Palette palette) {
-        int primaryDark = getResources().getColor(R.color.primary_dark);
-        int primary = getResources().getColor(R.color.primary);
-        collapsingToolbarLayout.setContentScrimColor(palette.getMutedColor(primary));
-        collapsingToolbarLayout.setStatusBarScrimColor(palette.getDarkMutedColor(primaryDark));
-        updateBackground((FloatingActionButton) findViewById(R.id.fab), palette);
-        supportStartPostponedEnterTransition();
+
+
+
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return PostsLoader.newAllPostsInstance(this);
     }
 
-    private void updateBackground(FloatingActionButton fab, Palette palette) {
-        int lightVibrantColor = palette.getLightVibrantColor(getResources().getColor(android.R.color.white));
-        int vibrantColor = palette.getVibrantColor(getResources().getColor(R.color.accent));
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        mCursor = cursor;
+        mPagerAdapter.setCursor(mCursor);
+        mPagerAdapter.notifyDataSetChanged();
 
-        fab.setRippleColor(lightVibrantColor);
-        fab.setBackgroundTintList(ColorStateList.valueOf(vibrantColor));
+        // Select the start ID
+        if (mStartId > 0) {
+            mCursor.moveToFirst();
+            // TODO: optimize
+            while (!mCursor.isAfterLast()) {
+                if (mCursor.getLong(Constants.COL_POST_ID) == mStartId) {
+                    final int position = mCursor.getPosition();
+                    mPager.setCurrentItem(position, false);
+                    break;
+                }
+                mCursor.moveToNext();
+            }
+            mStartId = 0;
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mCursor = null;
+        mPagerAdapter.notifyDataSetChanged();
+
+    }
+    private void createPager(){
+        mPagerAdapter = new PagerAdapter(getFragmentManager());
+        mPager.setAdapter(mPagerAdapter);
+        mPager.setPageMargin((int) TypedValue
+                .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
+        mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
+
+        mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                super.onPageScrollStateChanged(state);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (mCursor != null) {
+                    mCursor.moveToPosition(position);
+                }
+                mSelectedItemId = mCursor.getLong(Constants.COL_POST_ID);
+
+            }
+        });
     }
 }
