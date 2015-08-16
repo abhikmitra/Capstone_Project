@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.antonioleiva.materializeyourapp;
+package com.mitra.abhik.humansoftheworld;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -40,14 +40,16 @@ import com.squareup.picasso.Picasso;
 
 public class DetailActivity extends AppCompatActivity {
 
-    private static final String EXTRA_IMAGE = "com.antonioleiva.materializeyourapp.extraImage";
-    private static final String EXTRA_TITLE = "com.antonioleiva.materializeyourapp.extraTitle";
+    private static final String EXTRA_IMAGE = "com.mitra.abhik.humansoftheworld.extraImage";
+    private static final String EXTRA_TITLE = "com.mitra.abhik.humansoftheworld.extraTitle";
+    private static final String EXTRA_BODY = "com.mitra.abhik.humansoftheworld.extraBody";
     private CollapsingToolbarLayout collapsingToolbarLayout;
 
-    public static void navigate(AppCompatActivity activity, View transitionImage, ViewModel viewModel) {
+    public static void navigate(AppCompatActivity activity, View transitionImage, com.mitra.abhik.humansoftheworld.ViewModel viewModel) {
         Intent intent = new Intent(activity, DetailActivity.class);
         intent.putExtra(EXTRA_IMAGE, viewModel.getImage());
         intent.putExtra(EXTRA_TITLE, viewModel.getText());
+        intent.putExtra(EXTRA_BODY, viewModel.getBody());
 
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, transitionImage, EXTRA_IMAGE);
         ActivityCompat.startActivity(activity, intent, options.toBundle());
@@ -57,20 +59,21 @@ public class DetailActivity extends AppCompatActivity {
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initActivityTransitions();
-        setContentView(R.layout.activity_detail);
+        setContentView(com.mitra.abhik.humansoftheworld.R.layout.activity_detail);
 
-        ViewCompat.setTransitionName(findViewById(R.id.app_bar_layout), EXTRA_IMAGE);
+        ViewCompat.setTransitionName(findViewById(com.mitra.abhik.humansoftheworld.R.id.app_bar_layout), EXTRA_IMAGE);
         supportPostponeEnterTransition();
 
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        setSupportActionBar((Toolbar) findViewById(com.mitra.abhik.humansoftheworld.R.id.toolbar));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         String itemTitle = getIntent().getStringExtra(EXTRA_TITLE);
-        collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
+        String itemBody = getIntent().getStringExtra(EXTRA_BODY);
+        collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(com.mitra.abhik.humansoftheworld.R.id.collapsing_toolbar);
         collapsingToolbarLayout.setTitle(itemTitle);
         collapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
 
-        final ImageView image = (ImageView) findViewById(R.id.image);
+        final ImageView image = (ImageView) findViewById(com.mitra.abhik.humansoftheworld.R.id.image);
         Picasso.with(this).load(getIntent().getStringExtra(EXTRA_IMAGE)).into(image, new Callback() {
             @Override public void onSuccess() {
                 Bitmap bitmap = ((BitmapDrawable) image.getDrawable()).getBitmap();
@@ -87,6 +90,8 @@ public class DetailActivity extends AppCompatActivity {
         });
 
         TextView title = (TextView) findViewById(R.id.title);
+        TextView description = (TextView) findViewById(R.id.description);
+        description.setText(itemBody);
         title.setText(itemTitle);
     }
 

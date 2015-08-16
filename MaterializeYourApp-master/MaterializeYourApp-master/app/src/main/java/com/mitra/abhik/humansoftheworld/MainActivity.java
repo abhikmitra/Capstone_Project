@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package com.antonioleiva.materializeyourapp;
+package com.mitra.abhik.humansoftheworld;
 
+import android.accounts.Account;
+import android.app.LoaderManager;
+import android.content.ContentResolver;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -30,34 +35,39 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.antonioleiva.materializeyourapp.picasso.CircleTransform;
+import com.mitra.abhik.humansoftheworld.data.PostsContract;
+import com.mitra.abhik.humansoftheworld.data.PostsLoader;
+import com.mitra.abhik.humansoftheworld.picasso.CircleTransform;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String AVATAR_URL = "http://lorempixel.com/200/200/people/1/";
 
     private static List<ViewModel> items = new ArrayList<>();
 
-    static {
-        for (int i = 1; i <= 10; i++) {
-            items.add(new ViewModel("Item " + i, "http://lorempixel.com/500/500/animals/" + i));
-        }
-    }
 
     private DrawerLayout drawerLayout;
     private View content;
+    Account mAccount;
+    RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAccount = Utility.CreateSyncAccount(this);
         setContentView(R.layout.activity_main);
-
-        initRecyclerView();
+        Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        settingsBundle.putBoolean(
+                ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(mAccount, PostsContract.CONTENT_AUTHORITY, settingsBundle);
+        getLoaderManager().initLoader(0, null, this);
         initFab();
         initToolbar();
         setupDrawerLayout();
@@ -69,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     }
 
     private void initRecyclerView() {
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         RecyclerViewAdapter adapter = new RecyclerViewAdapter(items);
         adapter.setOnItemClickListener(this);
@@ -122,5 +132,27 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
     @Override public void onItemClick(View view, ViewModel viewModel) {
         DetailActivity.navigate(this, view.findViewById(R.id.image), viewModel);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return PostsLoader.newAllPostsInstance(this);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        items.clear();
+        while (cursor.moveToNext()){
+            items.add(new ViewModel(cursor.getString(Constants.COL_POST_TITLE),
+                    cursor.getString(Constants.COL_POST_PICTURE),
+                    cursor.getString(Constants.COL_POST_MESSAGE)));
+        }
+        initRecyclerView();
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        recyclerView.setAdapter(null);
     }
 }

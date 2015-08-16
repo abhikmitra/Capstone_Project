@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-package com.antonioleiva.materializeyourapp;
+package com.mitra.abhik.humansoftheworld;
 
-public class ViewModel {
-    private String text;
-    private String image;
+import android.annotation.TargetApi;
+import android.os.Build;
+import android.view.Window;
 
-    public ViewModel(String text, String image) {
-        this. text = text;
-        this.image = image;
-    }
+public class WindowCompatUtils {
 
-    public String getText() {
-        return text;
-    }
-
-    public String getImage() {
-        return image;
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public static void setStatusBarcolor(Window window, int color) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.setStatusBarColor(color);
+        }
     }
 }

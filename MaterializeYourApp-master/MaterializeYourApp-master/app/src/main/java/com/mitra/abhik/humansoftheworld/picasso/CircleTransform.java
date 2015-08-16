@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.antonioleiva.materializeyourapp.picasso;
+package com.mitra.abhik.humansoftheworld.picasso;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;

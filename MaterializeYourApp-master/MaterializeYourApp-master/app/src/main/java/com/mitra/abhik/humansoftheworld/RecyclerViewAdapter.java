@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.antonioleiva.materializeyourapp;
+package com.mitra.abhik.humansoftheworld;
 
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
