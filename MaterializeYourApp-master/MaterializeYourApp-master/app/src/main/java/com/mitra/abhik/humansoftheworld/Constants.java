@@ -31,4 +31,5 @@ public class Constants {
     public static final int COL_CREATED_DATE = 8;
     public static final int COL_DELETED = 8;
     public static final String post_id="post_id";
+    public static final String isFavorite="isFavorite";
 }

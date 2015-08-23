@@ -31,15 +31,6 @@
             android:icon="@drawable/ic_favorite_black_24dp"
             android:title="@string/favourite"/>
 
-        <item
-            android:id="@+id/drawer_downloaded"
-            android:icon="@drawable/ic_file_download_black_24dp"
-            android:title="@string/downloaded"/>
-
-        <item
-            android:id="@+id/drawer_more"
-            android:icon="@drawable/ic_more_horiz_black_24dp"
-            android:title="@string/more"/>
 
         <item
             android:id="@+id/drawer_settings"

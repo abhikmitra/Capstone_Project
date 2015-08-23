@@ -18,7 +18,9 @@ package com.mitra.abhik.humansoftheworld;
 
 import android.accounts.Account;
 import android.app.LoaderManager;
+import android.appwidget.AppWidgetManager;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -37,8 +39,10 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
@@ -58,12 +62,15 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     private static List<ViewModel> items = new ArrayList<>();
     Uri animated_empty_pic_uri = Uri.parse("res:///" + R.drawable.loading_animate);
     Account mAccount;
+    boolean isFavorite;
     @Bind(R.id.toolbar)
     Toolbar toolbar;
     @Bind(R.id.swipe_refresh_layout)
     SwipeRefreshLayout mSwipeRefreshLayout;
     @Bind(R.id.emptyView)
     SimpleDraweeView mEmptyView;
+    @Bind(R.id.emptyText)
+    TextView emptyText;
     @Bind(R.id.content)
     CoordinatorLayout content;
     @Bind(R.id.recycler)
@@ -74,9 +81,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     NavigationView navigationView;
     @Bind(R.id.appBarLayout)
     AppBarLayout appBar;
+    MenuItem favoriteMenuItem;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(savedInstanceState!=null){
+            isFavorite = savedInstanceState.getBoolean("isFavorite",false);
+        }
+
         mAccount = Utility.CreateSyncAccount(this);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -94,7 +106,18 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         getLoaderManager().initLoader(0, null, this);
         initToolbar();
         setupDrawerLayout();
+        Intent initialUpdateIntent = new Intent(
+                AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        initialUpdateIntent
+                .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        sendBroadcast(initialUpdateIntent);
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean("isFavorite", isFavorite);
+        super.onSaveInstanceState(outState);
     }
 
     private void initRecyclerView() {
@@ -119,9 +142,21 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     }
 
     private void setupDrawerLayout() {
+        if(isFavorite){
+            navigationView.getMenu().getItem(1).setChecked(true);
+        }
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override public boolean onNavigationItemSelected(MenuItem menuItem) {
-                Snackbar.make(content, menuItem.getTitle() + " pressed", Snackbar.LENGTH_LONG).show();
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                if (menuItem.getItemId() == R.id.drawer_favourite) {
+                    isFavorite = true;
+                    getLoaderManager().restartLoader(0, null, MainActivity.this);
+                    Snackbar.make(content, "Showing your favorites", Snackbar.LENGTH_LONG).show();
+                }
+                if (menuItem.getItemId() == R.id.drawer_home) {
+                    isFavorite = false;
+                    getLoaderManager().restartLoader(0, null, MainActivity.this);
+                }
                 menuItem.setChecked(true);
                 drawerLayout.closeDrawers();
                 return true;
@@ -141,19 +176,29 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     }
 
     @Override public void onItemClick(View view, ViewModel viewModel) {
-        DetailActivity.navigate(this, view.findViewById(R.id.image), viewModel.getId());
+        DetailActivity.navigate(this, view.findViewById(R.id.image), viewModel.getId(), isFavorite);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return PostsLoader.newAllPostsInstance(this);
+        if(isFavorite){
+           return PostsLoader.newAllFavoritePostsInstance(this);
+        } else {
+            return PostsLoader.newAllPostsInstance(this);
+        }
+
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         items.clear();
         cursor.moveToFirst();
-        showLoadingScreen(cursor.getCount()==0);
+        if(isFavorite){
+            showEmptyScreen(cursor.getCount() == 0);
+        } else {
+            showLoadingScreen(cursor.getCount() == 0);
+        }
+
         while (cursor.moveToNext()){
             items.add(new ViewModel(cursor.getString(Constants.COL_POST_TITLE),
                     cursor.getString(Constants.COL_POST_PICTURE),
@@ -172,13 +217,39 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         if(b){
             getWindow().getDecorView().setBackgroundColor(Color.BLACK);
             mEmptyView.setVisibility(View.VISIBLE);
+            emptyText.setVisibility(View.VISIBLE);
+            emptyText.setText("Loading");
             appBar.setVisibility(View.GONE);
             mSwipeRefreshLayout.setVisibility(View.GONE);
         } else {
             getWindow().getDecorView().setBackgroundColor(Color.WHITE);
             mEmptyView.setVisibility(View.GONE);
+            emptyText.setVisibility(View.GONE);
             appBar.setVisibility(View.VISIBLE);
             mSwipeRefreshLayout.setVisibility(View.VISIBLE);
         }
+    }
+    protected void showEmptyScreen(Boolean b){
+        if(b){
+            getWindow().getDecorView().setBackgroundColor(Color.BLACK);
+            mEmptyView.setVisibility(View.VISIBLE);
+            emptyText.setVisibility(View.VISIBLE);
+            emptyText.setText("You don't have any favorites");
+            appBar.setVisibility(View.VISIBLE);
+            mSwipeRefreshLayout.setVisibility(View.GONE);
+        } else {
+            getWindow().getDecorView().setBackgroundColor(Color.WHITE);
+            mEmptyView.setVisibility(View.GONE);
+            emptyText.setVisibility(View.GONE);
+            appBar.setVisibility(View.VISIBLE);
+            mSwipeRefreshLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        favoriteMenuItem = (MenuItem) findViewById(R.id.drawer_favourite);
+        return true;
     }
 }

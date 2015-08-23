@@ -45,16 +45,20 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     @Bind(R.id.pager)
     public ViewPager mPager;
     private PagerAdapter mPagerAdapter;
-
-    public static void navigate(AppCompatActivity activity, View transitionImage, long id) {
+    private Boolean isFavorite;
+    public static void navigate(AppCompatActivity activity, View transitionImage, long id,Boolean isFavorite) {
         Intent intent = new Intent(activity, DetailActivity.class);
-        intent.putExtra(Constants.post_id,id);
+        intent.putExtra(Constants.post_id, id);
+        intent.putExtra(Constants.isFavorite, isFavorite);
         ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, transitionImage, EXTRA_IMAGE);
         ActivityCompat.startActivity(activity, intent, options.toBundle());
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override protected void onCreate(Bundle savedInstanceState) {
+        if(savedInstanceState!=null){
+            isFavorite =savedInstanceState.getBoolean("isFavorite",false);
+        }
         super.onCreate(savedInstanceState);
         initActivityTransitions();
         setContentView(com.mitra.abhik.humansoftheworld.R.layout.activity_detail);
@@ -62,6 +66,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         if (savedInstanceState == null) {
             if (getIntent() != null) {
                 mStartId = getIntent().getLongExtra(Constants.post_id,0);
+                isFavorite = getIntent().getBooleanExtra(Constants.isFavorite, false);
                 mSelectedItemId = mStartId;
             }
         }
@@ -85,7 +90,12 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return PostsLoader.newAllPostsInstance(this);
+        if(isFavorite){
+            return PostsLoader.newAllFavoritePostsInstance(this);
+        } else {
+            return PostsLoader.newAllPostsInstance(this);
+        }
+
     }
 
     @Override
@@ -93,13 +103,11 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         mCursor = cursor;
         mPagerAdapter.setCursor(mCursor);
         mPagerAdapter.notifyDataSetChanged();
-
-        // Select the start ID
-        if (mStartId > 0) {
+        if (mSelectedItemId > 0) {
             mCursor.moveToFirst();
             // TODO: optimize
             while (!mCursor.isAfterLast()) {
-                if (mCursor.getLong(Constants.COL_POST_ID) == mStartId) {
+                if (mCursor.getLong(Constants.COL_POST_ID) == mSelectedItemId) {
                     final int position = mCursor.getPosition();
                     mPager.setCurrentItem(position, false);
                     break;
@@ -112,8 +120,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        mCursor = null;
-        mPagerAdapter.notifyDataSetChanged();
+
 
     }
     private void createPager(){

@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.facebook.AccessToken;
+import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
@@ -46,7 +47,11 @@ public class PostSyncAdapter extends AbstractThreadedSyncAdapter {
     ContentResolver contentResolver ;
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-      getPages();
+     Boolean isLoggedIn = getContext().getSharedPreferences("com.abhik.facebook", Context.MODE_PRIVATE).getBoolean("Login",false);
+        if(isLoggedIn){
+            FacebookSdk.sdkInitialize(getContext());
+            getPages();
+        }
     }
     protected void getPages(){
     Observable<Post> ob =  Observable.create(new Observable.OnSubscribe<Page>() {

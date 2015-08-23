@@ -26,9 +26,11 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         mCursor.moveToPosition(position);
         return DetailActivityFragment.newInstance(
+
                 mCursor.getString(Constants.COL_POST_TITLE),
                 mCursor.getString(Constants.COL_POST_PICTURE),
-                mCursor.getString(Constants.COL_POST_MESSAGE)
+                mCursor.getString(Constants.COL_POST_MESSAGE),
+                mCursor.getLong(Constants.COL_POST_ID)
                 );
     }
 
@@ -37,7 +39,14 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
     }
 
     @Override
+    public int getItemPosition(Object object) {
+        return PagerAdapter.POSITION_NONE;
+    }
+
+    @Override
     public int getCount() {
+
         return (mCursor != null) ? mCursor.getCount() : 0;
     }
+
 }

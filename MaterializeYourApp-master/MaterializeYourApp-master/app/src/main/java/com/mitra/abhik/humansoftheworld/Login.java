@@ -1,6 +1,7 @@
 package com.mitra.abhik.humansoftheworld;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -53,9 +54,6 @@ public class Login extends AppCompatActivity {
                 .build();
         mSimpleDraweeView.setController(controller);
         humanText.setTypeface(tf);
-//        Glide.with(this)
-//                .load(animated_logo_uri)
-//                .into(mSimpleDraweeView);
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         if(accessToken != null){
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
@@ -118,6 +116,7 @@ public class Login extends AppCompatActivity {
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
+                getSharedPreferences("com.abhik.facebook",Context.MODE_PRIVATE).edit().putBoolean("Login",true).commit();
                 Log.d(FBTAG, "Login to facebook successful");
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);

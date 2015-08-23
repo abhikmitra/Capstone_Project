@@ -1,7 +1,10 @@
 package com.mitra.abhik.humansoftheworld;
 
 import android.app.Fragment;
+import android.app.LoaderManager;
+import android.content.Loader;
 import android.content.res.ColorStateList;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -18,22 +21,29 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.mitra.abhik.humansoftheworld.data.PostsContract;
+import com.mitra.abhik.humansoftheworld.data.PostsLoader;
+import com.mitra.abhik.humansoftheworld.entities.Post;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class DetailActivityFragment extends Fragment {
+public class DetailActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String EXTRA_IMAGE = "com.mitra.abhik.humansoftheworld.extraImage";
     private static final String EXTRA_TITLE = "com.mitra.abhik.humansoftheworld.extraTitle";
     private static final String EXTRA_BODY = "com.mitra.abhik.humansoftheworld.extraBody";
+    private static final String EXTRA_ID = "com.mitra.abhik.humansoftheworld.extraID";
     private static final String TAG = "DetailActivityFragment";
     public static final String ARG_ITEM_ID = "item_id";
+    Post post;
     @Bind(R.id.collapsing_toolbar)
     public CollapsingToolbarLayout collapsingToolbarLayout;
     @Bind(R.id.fab)
     public FloatingActionButton fab;
+    @Bind(R.id.fab_delete)
+    public FloatingActionButton fab_delete;
     @Bind(R.id.image)
     public ImageView image;
     @Bind(R.id.app_bar_layout)
@@ -45,11 +55,13 @@ public class DetailActivityFragment extends Fragment {
     @Bind(R.id.toolbar)
     public Toolbar toolbar;
     private String title,picture,message;
-     public static DetailActivityFragment newInstance(String title,String picture,String message) {
+    private long _ID;
+     public static DetailActivityFragment newInstance(String title,String picture,String message,long Id) {
         Bundle arguments = new Bundle();
         arguments.putString(EXTRA_TITLE, title);
         arguments.putString(EXTRA_IMAGE, picture);
         arguments.putString(EXTRA_BODY, message);
+        arguments.putLong(EXTRA_ID, Id);
         DetailActivityFragment fragment = new DetailActivityFragment();
         fragment.setArguments(arguments);
         return fragment;
@@ -70,6 +82,10 @@ public class DetailActivityFragment extends Fragment {
         if (getArguments().containsKey(EXTRA_BODY)) {
             message = getArguments().getString(EXTRA_BODY);
         }
+        if (getArguments().containsKey(EXTRA_ID)) {
+            _ID = getArguments().getLong(EXTRA_ID);
+        }
+
         super.onCreate(savedInstanceState);
 
     }
@@ -86,11 +102,11 @@ public class DetailActivityFragment extends Fragment {
         Picasso.with(getActivity()).load(picture).into(image, new Callback() {
             @Override
             public void onSuccess() {
-                if(isAdded()){
+                if (isAdded()) {
                     Bitmap bitmap = ((BitmapDrawable) image.getDrawable()).getBitmap();
                     Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
                         public void onGenerated(Palette palette) {
-                            if(isAdded()){
+                            if (isAdded()) {
                                 applyPalette(palette);
                             }
 
@@ -109,6 +125,21 @@ public class DetailActivityFragment extends Fragment {
         titleView.setText(title);
         collapsingToolbarLayout.setTitle(title);
         collapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                post.setIs_favorite(true);
+                getActivity().getContentResolver().update(PostsContract.PostEntry.buildUriForPost(post.get_ID()), Utility.changePostToContentValue(post), "_id=" + post.get_ID(), null);
+            }
+        });
+        fab_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                post.setIsDeleted(true);
+                getActivity().getContentResolver().update(PostsContract.PostEntry.buildUriForPost(post.get_ID()), Utility.changePostToContentValue(post), "_id=" + post.get_ID(), null);
+            }
+        });
+        getLoaderManager().initLoader(0, null, this);
         return v;
     }
     private void applyPalette(Palette palette) {
@@ -126,6 +157,22 @@ public class DetailActivityFragment extends Fragment {
         fab.setBackgroundTintList(ColorStateList.valueOf(vibrantColor));
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return PostsLoader.newInstanceForItemId(getActivity(),_ID);
+    }
 
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if(data.getCount()==1){
+            data.moveToFirst();
+            post = new Post(data);
+        }
 
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        post=null;
+    }
 }
