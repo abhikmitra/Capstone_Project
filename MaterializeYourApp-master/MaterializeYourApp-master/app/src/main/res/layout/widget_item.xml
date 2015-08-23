@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:orientation="horizontal"
+<RelativeLayout
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/primary_dark"
+    android:padding="1dp"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <ImageView
         android:id="@+id/picture"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="108dp"
         android:src="@drawable/earth"
         android:scaleType="centerCrop"/>
+
     <TextView android:background="@color/primary"
         android:padding="8dp"
         android:gravity="center"
@@ -19,7 +22,9 @@
         android:textSize="12sp"
         android:textStyle="italic"
         android:text="Loading..."
+        android:layout_alignBottom="@id/picture"
+        android:elevation="@dimen/abc_action_bar_content_inset_material"
         android:textColor="@color/white_opaque" />
 
 
-</LinearLayout>
+</RelativeLayout>

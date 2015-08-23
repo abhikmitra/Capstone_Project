@@ -33,12 +33,14 @@ public class WidgetService extends RemoteViewsService {
         public void onCreate() {
             c = getContentResolver().query(PostsContract.PostEntry.buildUriForPosts(),
                     Constants.POST_COLUMNS, null, null, Constants.POST_COLUMNS[Constants.COL_CREATED_DATE] + " DESC");
+            c.moveToFirst();
         }
 
         @Override
         public void onDataSetChanged() {
             c = getContentResolver().query(PostsContract.PostEntry.buildUriForPosts(),
                     Constants.POST_COLUMNS, null, null, Constants.POST_COLUMNS[Constants.COL_CREATED_DATE] + " DESC");
+            c.moveToFirst();
         }
 
         @Override
@@ -48,13 +50,13 @@ public class WidgetService extends RemoteViewsService {
 
         @Override
         public int getCount() {
-            return 1;
+            return c.getCount();
         }
 
         @Override
         public RemoteViews getViewAt(int position) {
             RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.widget_item);
-            if(c.moveToLast()){
+            if(c.moveToNext()){
                 String picture = c.getString(Constants.COL_POST_PICTURE);
                 String message = c.getString(Constants.COL_POST_TITLE);
                 rv.setTextViewText(R.id.description, message);
@@ -83,10 +85,9 @@ public class WidgetService extends RemoteViewsService {
 
         @Override
         public long getItemId(int position) {
-            if(c.moveToFirst()){
-                return c.getLong(Constants.COL_POST_ID);
-            }
-            return -1;
+
+            return c.getLong(Constants.COL_POST_ID);
+
         }
 
         @Override
