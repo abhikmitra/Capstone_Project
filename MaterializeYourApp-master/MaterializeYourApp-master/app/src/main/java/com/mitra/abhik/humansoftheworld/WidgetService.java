@@ -58,10 +58,10 @@ public class WidgetService extends RemoteViewsService {
             if(c.moveToLast()){
                 String picture = c.getString(Constants.COL_POST_PICTURE);
                 String message = c.getString(Constants.COL_POST_MESSAGE);
-                rv.setTextViewText(R.id.description, message);
+                //rv.setTextViewText(R.id.description, message);
                 try {
                     Bitmap b = Picasso.with(getApplicationContext()).load(picture).get();
-                    rv.setImageViewBitmap(R.id.picture, b);
+                    //rv.setImageViewBitmap(R.id.picture, b);
                 }
                 catch (Exception e){
 
