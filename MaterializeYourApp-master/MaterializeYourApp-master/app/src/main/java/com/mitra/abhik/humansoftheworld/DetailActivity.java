@@ -31,6 +31,7 @@ import android.transition.Slide;
 import android.util.TypedValue;
 import android.view.View;
 
+import com.facebook.appevents.AppEventsLogger;
 import com.mitra.abhik.humansoftheworld.data.PostsLoader;
 
 import butterknife.Bind;
@@ -145,5 +146,11 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
             }
         });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppEventsLogger.deactivateApp(this);
     }
 }

@@ -58,9 +58,12 @@ public class PostSyncAdapter extends AbstractThreadedSyncAdapter {
             @Override
             public void call(Subscriber<? super Page> subscriber) {
                 ArrayList<Page> pages = getPagesFromServer();
-                for (Page page : pages) {
-                    subscriber.onNext(page);
+                if(pages!=null){
+                    for (Page page : pages) {
+                        subscriber.onNext(page);
+                    }
                 }
+
                 subscriber.onCompleted();
             }
         })

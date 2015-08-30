@@ -16,7 +16,7 @@
         android:layout_marginTop="90dp"
         android:layout_marginLeft="@dimen/spacing_large"
         android:layout_marginStart="@dimen/spacing_large"
-        android:text="Humans of the World"
+        android:text="@string/humansOfTheWorld"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
 
 

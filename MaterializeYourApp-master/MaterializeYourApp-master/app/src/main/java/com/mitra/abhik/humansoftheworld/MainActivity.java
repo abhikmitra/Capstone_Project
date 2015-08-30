@@ -44,9 +44,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.facebook.appevents.AppEventsLogger;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.mitra.abhik.humansoftheworld.data.PostsContract;
 import com.mitra.abhik.humansoftheworld.data.PostsLoader;
 
@@ -61,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
     private static List<ViewModel> items = new ArrayList<>();
     Uri animated_empty_pic_uri = Uri.parse("res:///" + R.drawable.loading_animate);
+    private Tracker mTracker;
     Account mAccount;
     boolean isFavorite;
     @Bind(R.id.toolbar)
@@ -81,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     NavigationView navigationView;
     @Bind(R.id.appBarLayout)
     AppBarLayout appBar;
+    @Bind(R.id.adView)
+    AdView adView;
     MenuItem favoriteMenuItem;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +119,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         initialUpdateIntent
                 .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         sendBroadcast(initialUpdateIntent);
+
+        mTracker = ((HumanApplication)getApplication()).getDefaultTracker();
 
     }
 
@@ -237,7 +247,10 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             emptyText.setText("You don't have any favorites");
             appBar.setVisibility(View.VISIBLE);
             mSwipeRefreshLayout.setVisibility(View.GONE);
+            mTracker.setScreenName("Main Screen~ DATA Empty");
         } else {
+            mTracker.setScreenName("Main Screen~ DATA Arrived");
+            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
             getWindow().getDecorView().setBackgroundColor(Color.WHITE);
             mEmptyView.setVisibility(View.GONE);
             emptyText.setVisibility(View.GONE);
@@ -251,5 +264,29 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         super.onCreateOptionsMenu(menu);
         favoriteMenuItem = (MenuItem) findViewById(R.id.drawer_favourite);
         return true;
+    }
+
+    @Override
+    protected void onPause() {
+        if (adView != null) {
+            adView.pause();
+        }
+        super.onPause();
+        AppEventsLogger.deactivateApp(this);
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        AdRequest adRequest = new AdRequest.Builder().build();
+        try{
+            adView.loadAd(adRequest);
+            if (adView != null) {
+                adView.resume();
+            }
+        } catch (Exception e){
+
+        }
+
+
     }
 }

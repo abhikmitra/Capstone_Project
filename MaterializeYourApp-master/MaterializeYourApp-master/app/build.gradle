@@ -15,6 +15,7 @@
  */
 
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 22
@@ -28,12 +29,22 @@ android {
         versionName "1.0"
     }
 
-    
 
+    signingConfigs {
+        release {
+            storeFile file("humans_keystore.jks")
+            storePassword "password"
+            keyAlias "humans"
+            keyPassword "password"
+        }
+    }
     buildTypes {
-        debug {
-            minifyEnabled false
 
+        debug {
+            debuggable true
+        }
+        release {
+            signingConfig signingConfigs.release
         }
     }
 }
@@ -50,11 +61,13 @@ dependencies {
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'com.facebook.stetho:stetho:1.1.1'
     compile 'io.reactivex:rxandroid:0.25.0'
-    compile 'com.google.android.gms:play-services-ads:7.5.0'
+    compile 'com.google.android.gms:play-services-ads:7.8.0'
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'com.android.support:support-v4:22.2.0'
     compile 'com.android.support:support-v13:22.2.0'
     compile 'com.facebook.fresco:fresco:0.6.1+'
     compile 'com.github.bumptech.glide:glide:3.6.1'
     compile 'com.android.support:support-v4:22.2.0'
+    compile 'com.google.android.gms:play-services-analytics:7.3.0'
+
 }
