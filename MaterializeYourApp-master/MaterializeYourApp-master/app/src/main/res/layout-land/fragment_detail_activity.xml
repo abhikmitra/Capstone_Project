@@ -105,5 +105,10 @@
         app:layout_anchor="@id/app_bar_layout"
         app:layout_anchorGravity="bottom|right|end"
         style="@style/FabStyle"/>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_delete"
+        app:layout_anchor="@id/image"
+        app:layout_anchorGravity="bottom|left|end"
+        style="@style/FabStyle.DeleteStyle"/>
 
 </android.support.design.widget.CoordinatorLayout>

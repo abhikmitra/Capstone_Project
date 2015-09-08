@@ -42,6 +42,10 @@
     <style name="FabStyle.FavoriteStyle">
         <item name="android:src">@drawable/ic_favorite_black_24dp</item>
     </style>
+    <style name="CustomActionBarTheme"
+        parent="@android:style/Theme.Holo">
+        <item name="android:windowActionBarOverlay">true</item>
+    </style>
 
     <color name="primary">#00BCD4</color>
     <color name="primary_dark">#0097A7</color>

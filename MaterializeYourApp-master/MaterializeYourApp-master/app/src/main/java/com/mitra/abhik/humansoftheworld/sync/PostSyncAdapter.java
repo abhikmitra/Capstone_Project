@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.facebook.AccessToken;
-import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
@@ -45,14 +44,49 @@ public class PostSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String TAG = PostSyncAdapter.class.getSimpleName();
     public static int numberOfRequests = 0;
     ContentResolver contentResolver ;
+    boolean hasStarted = false;
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
      Boolean isLoggedIn = getContext().getSharedPreferences("com.abhik.facebook", Context.MODE_PRIVATE).getBoolean("Login",false);
-        if(isLoggedIn){
-            FacebookSdk.sdkInitialize(getContext());
-            getPages();
-        }
+//        if(isLoggedIn){
+//            FacebookSdk.sdkInitialize(getContext());
+//            getPages();
+//        }
+
+       Observable.create(new Observable.OnSubscribe<Page>() {
+            @Override
+            public void call(Subscriber<? super Page> subscriber) {
+                long a = 1111;
+                Page page1 = new  Page("Test",a,"hello");
+                Page page2 = new  Page("Test",a,"hello");
+                ArrayList<Page> pages = new ArrayList<Page>();
+                pages.add(page1);
+                pages.add(page2);
+                if(pages!=null){
+                    for (Page page : pages) {
+                        subscriber.onNext(page);
+                    }
+                }
+
+                subscriber.onCompleted();
+            }
+        }).subscribe(new Action1<Page>() {
+           @Override
+           public void call(Page page) {
+               if (hasStarted == false) {
+                   Log.e("RXAndroid", "Has started should have been true");
+               }
+           }
+       });
+        hasStarted = true;
+
+
     }
+
+
+
+
+
     protected void getPages(){
     Observable<Post> ob =  Observable.create(new Observable.OnSubscribe<Page>() {
             @Override

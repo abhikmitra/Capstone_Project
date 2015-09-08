@@ -1,23 +1,30 @@
 package com.mitra.abhik.humansoftheworld;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Loader;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -54,7 +61,10 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
     public TextView description;
     @Bind(R.id.toolbar)
     public Toolbar toolbar;
+    @Bind(R.id.scroll)
+    public NestedScrollView scrollView;
     private String title,picture,message;
+    private Activity activity;
     private long _ID;
      public static DetailActivityFragment newInstance(String title,String picture,String message,long Id) {
         Bundle arguments = new Bundle();
@@ -99,6 +109,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
         ((AppCompatActivity)getActivity()).supportPostponeEnterTransition();
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         Picasso.with(getActivity()).load(picture).into(image, new Callback() {
             @Override
             public void onSuccess() {
@@ -140,7 +151,45 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
             }
         });
         getLoaderManager().initLoader(0, null, this);
+        final ColorDrawable cd = new ColorDrawable(Color.rgb(68, 74, 83));
+        cd.setAlpha(50);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setBackgroundDrawable(cd);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(title);
+        activity = getActivity();
+
+        scrollView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
+            @Override
+
+            public void onScrollChanged() {
+
+                int position = scrollView.getScrollY();
+                image.setAlpha(getAlphaForView(position));
+            }
+        });
+
         return v;
+    }
+    private float getAlphaForView(int position) {
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int screenHeight = size.y;
+        int diff = 0;
+        float minAlpha = 0.4f, maxAlpha = 1.f;
+        float alpha = minAlpha; // min alpha
+        if (position > screenHeight)
+            alpha = minAlpha;
+        else if (position + image.getHeight() < screenHeight)
+            alpha = maxAlpha;
+        else {
+            diff = screenHeight - position;
+            alpha += ((diff * 1f) / image.getHeight())* (maxAlpha - minAlpha); // 1f and 0.4f are maximum and min
+            // alpha
+            // this will return a number betn 0f and 0.6f
+        }
+        // System.out.println(alpha+" "+screenHeight +" "+locationImageInitialLocation+" "+position+" "+diff);
+        return alpha;
     }
     private void applyPalette(Palette palette) {
         int primaryDark = getResources().getColor(R.color.primary_dark);
@@ -155,6 +204,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
         fab.setRippleColor(lightVibrantColor);
         fab.setBackgroundTintList(ColorStateList.valueOf(vibrantColor));
+
     }
 
     @Override
