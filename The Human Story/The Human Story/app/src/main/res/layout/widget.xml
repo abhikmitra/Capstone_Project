@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent" android:elevation="@dimen/abc_action_bar_content_inset_material"
+    android:layout_height="match_parent" android:id="@+id/container" android:padding="@dimen/widget_margin">
+   <StackView
+       android:layout_width="match_parent" android:id="@+id/listView"
+       android:layout_height="match_parent">
+
+   </StackView>
+
+</LinearLayout>
