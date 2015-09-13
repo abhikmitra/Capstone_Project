@@ -72,8 +72,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     .build();
             holder.image.setHierarchy(hierarchy);
             holder.setRecycled(true);
+
         }
+
         ViewModel item = items.get(position);
+        holder.image.setContentDescription(item.getText());
         holder.text.setText(item.getText());
         holder.image.setImageBitmap(null);
         ControllerListener controllerListener = new BaseControllerListener<ImageInfo>() {

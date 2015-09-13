@@ -29,6 +29,7 @@
     <string name="action_logout">Log out</string>
     <string name="title_activity_post">PostActivity</string>
     <string name="hello_world">Hello world!</string>
+    <string name="empty">There are no results to show</string>
 
     <!-- Facebook configs -->
     <string name="fb_app_id">1457162227924836</string>

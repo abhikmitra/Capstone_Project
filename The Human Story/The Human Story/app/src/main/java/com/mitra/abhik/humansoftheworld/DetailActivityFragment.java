@@ -132,8 +132,11 @@ public class DetailActivityFragment extends Fragment implements LoaderManager.Lo
 
             }
         });
+        image.setContentDescription(title);
         description.setText(message);
+        description.setContentDescription(message);
         titleView.setText(title);
+        titleView.setContentDescription(title);
         collapsingToolbarLayout.setTitle(title);
         collapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
         fab.setOnClickListener(new View.OnClickListener() {
