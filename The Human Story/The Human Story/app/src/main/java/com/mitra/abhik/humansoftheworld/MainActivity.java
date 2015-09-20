@@ -167,6 +167,10 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                     isFavorite = false;
                     getLoaderManager().restartLoader(0, null, MainActivity.this);
                 }
+                if (menuItem.getItemId() == R.id.drawer_logout) {
+                    Utility.logout(MainActivity.this);
+
+                }
                 menuItem.setChecked(true);
                 drawerLayout.closeDrawers();
                 return true;

@@ -166,11 +166,11 @@ public class Login extends AppCompatActivity {
             @Override
             public void onCancel() {
                 Log.d(FBTAG, "Login to facebook has been cancelled by the user.");
-                new AlertDialog.Builder(getApplicationContext())
-                        .setTitle("Facebook Login Failure")
-                        .setMessage("You need to login with Facebook to proceed.This app does not post to your wall")
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
+//                new AlertDialog.Builder(getApplicationContext())
+//                        .setTitle("Facebook Login Failure")
+//                        .setMessage("You need to login with Facebook to proceed.This app does not post to your wall")
+//                        .setIcon(android.R.drawable.ic_dialog_alert)
+//                        .show();
             }
 
             @Override

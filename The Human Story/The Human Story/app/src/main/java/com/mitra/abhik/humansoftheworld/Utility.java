@@ -2,12 +2,20 @@ package com.mitra.abhik.humansoftheworld;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
+import com.facebook.AccessToken;
+import com.facebook.FacebookRequestError;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.facebook.login.LoginManager;
 import com.mitra.abhik.humansoftheworld.data.PostsContract;
 import com.mitra.abhik.humansoftheworld.entities.Post;
 
@@ -113,5 +121,28 @@ public class Utility {
         }
         //ContentResolver.setSyncAutomatically(newAccount, PostsContract.CONTENT_AUTHORITY, true);
         return newAccount;
+    }
+
+    public static void logout(final Context context){
+        GraphRequest delPermRequest = new GraphRequest(AccessToken.getCurrentAccessToken(), "/{user-id}/permissions/", null, HttpMethod.DELETE, new GraphRequest.Callback() {
+            @Override
+            public void onCompleted(GraphResponse graphResponse) {
+                if(graphResponse!=null){
+                    FacebookRequestError error =graphResponse.getError();
+                    if(error!=null){
+                        Log.e(TAG, error.toString());
+                        LoginManager.getInstance().logOut();
+                        Intent in = new Intent(context,Login.class);
+                        in.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(in);
+                        ((Activity)context).finish();
+                    }else {
+                        ((Activity)context).finish();
+                    }
+                }
+            }
+        });
+        Log.d(TAG,"Executing revoke permissions with graph path" + delPermRequest.getGraphPath());
+        delPermRequest.executeAsync();
     }
 }

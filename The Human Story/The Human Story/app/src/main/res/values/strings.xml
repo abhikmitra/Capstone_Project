@@ -22,6 +22,7 @@
     <string name="downloaded">Downloaded</string>
     <string name="more">More</string>
     <string name="settings">Settings</string>
+    <string name="logOut">Log Out</string>
     <string name="app_name">Humans</string>
     <string name="humansOfTheWorld">THE HUMAN STORIES</string>
     <string name="action_settings">Settings</string>
@@ -32,7 +33,7 @@
     <string name="empty">There are no results to show</string>
 
     <!-- Facebook configs -->
-    <string name="fb_app_id">1457162227924836</string>
+    <string name="fb_app_id">1632933720287691</string>
     <string name="title_activity_feeds">The Human Stories</string>
     <string name="content_authority">android.abhik.posts</string>
     <string name="sync_account_type">android.abhik.com</string>
